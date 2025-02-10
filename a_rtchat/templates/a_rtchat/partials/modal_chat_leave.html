@@ -1,0 +1,4 @@
+<form method="POST" action="{% url 'chatroom-leave' chat_group.group_name %}" class="flex justify-end">
+    {% csrf_token %}
+    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Leave Group</button>
+</form>

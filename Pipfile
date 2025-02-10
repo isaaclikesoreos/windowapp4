@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django-allauth = "*"
+django-htmx = "*"
+mysqlclient = "*"
+channels = "*"
+daphne = "*"
+djangorestframework = "*"
+djangorestframework-simplejwt = "*"
+requests = "*"
+shortuuid = "*"
+pillow = "*"
+django_cleanup = "*"
+django-tailwind = {extras = ["reload"], version = "*"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"

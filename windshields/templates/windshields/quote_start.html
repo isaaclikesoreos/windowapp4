@@ -1,0 +1,49 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Start Your Quote</h1>
+<!-- Load jQuery first -->
+<script src="{% static 'windshields/js/jquery.min.js' %}"></script>
+<!-- Then load your custom script -->
+<script src="{% static 'windshields/js/quote_start.js' %}"></script>
+
+<form id="jobEntryForm" method="post">
+    {% csrf_token %}
+    <!-- Step 1: Damage Information -->
+    <fieldset class="step active" id="step1">
+        <legend>Step 1: Damage Information</legend>
+        
+        <div>
+            <label for="id_damage_piece">Glass Damaged:</label>
+            {{ form.damage_piece }}
+        </div>
+        
+        <!-- Container for windshield (or similar) damage side -->
+        <div id="damageSideContainer" style="display: none;">
+            <label for="id_damage_side">Select side (if applicable):</label>
+            {{ form.damage_side }}
+        </div>
+        
+        <!-- Container for door-side selection -->
+        <div id="doorSideContainer" style="display: none;">
+            <label for="id_door_side">Select Door Side (Driver/Passenger):</label>
+            {{ form.door_side }}
+        </div>
+        
+        <div>
+            <label for="id_cause_of_damage">Cause of Damage?</label>
+            {{ form.cause_of_damage }}
+        </div>
+        
+        <div>
+            <label for="id_impacting_driving">Does this impact your driving ability?</label>
+            {{ form.impacting_driving }}
+        </div>
+        
+        <button type="button" id="nextStep1">Next</button>
+    </fieldset>
+
+    <!-- Additional steps would follow -->
+</form>
+{% endblock %}
