@@ -2,48 +2,150 @@
 {% load static %}
 
 {% block content %}
-<h1>Start Your Quote</h1>
+<h1 class="text-2xl font-bold mb-4">Start Your Quote</h1>
 <!-- Load jQuery first -->
 <script src="{% static 'windshields/js/jquery.min.js' %}"></script>
 <!-- Then load your custom script -->
 <script src="{% static 'windshields/js/quote_start.js' %}"></script>
 
-<form id="jobEntryForm" method="post">
+<form id="jobEntryForm" method="post" data-url="{% url 'quote_start' %}" class="space-y-4">
     {% csrf_token %}
     <!-- Step 1: Damage Information -->
     <fieldset class="step active" id="step1">
-        <legend>Step 1: Damage Information</legend>
+        <legend class="text-xl font-bold mb-2">Step 1: Damage Information</legend>
         
-        <div>
-            <label for="id_damage_piece">Glass Damaged:</label>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_damage_piece">Glass Damaged:</label>
             {{ form.damage_piece }}
         </div>
         
-        <!-- Container for windshield (or similar) damage side -->
-        <div id="damageSideContainer" style="display: none;">
-            <label for="id_damage_side">Select side (if applicable):</label>
-            {{ form.damage_side }}
+        <!-- Container for door glass: damage_side -->
+        <div id="doorSideContainer" class="mb-4 hidden">
+            <label class="text-black block font-semibold mb-1" for="id_damage_side">Select Door Side (Driver/Passenger):</label>
+            {% for radio in form.damage_side %}
+              <label class="inline-block mr-4">
+                {{ radio.tag }} {{ radio.choice_label }}
+              </label>
+            {% endfor %}
         </div>
         
-        <!-- Container for door-side selection -->
-        <div id="doorSideContainer" style="display: none;">
-            <label for="id_door_side">Select Door Side (Driver/Passenger):</label>
-            {{ form.door_side }}
+        <!-- Container for windshield repair option -->
+        <div id="repairOptionContainer" class="mb-4 hidden">
+            <label class="text-black block font-semibold mb-1" for="id_is_repairable">Is it repairable?</label>
+            {% for radio in form.is_repairable %}
+              <label class="inline-block mr-4">
+                {{ radio.tag }} {{ radio.choice_label }}
+              </label>
+            {% endfor %}
         </div>
         
-        <div>
-            <label for="id_cause_of_damage">Cause of Damage?</label>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_cause_of_damage">Cause of Damage?</label>
             {{ form.cause_of_damage }}
         </div>
         
-        <div>
-            <label for="id_impacting_driving">Does this impact your driving ability?</label>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_impacting_driving">Does this impact your driving ability?</label>
             {{ form.impacting_driving }}
         </div>
         
-        <button type="button" id="nextStep1">Next</button>
+        <button type="button" id="nextStep1" class="bg-blue-500 text-white px-4 py-2">Next</button>
     </fieldset>
 
-    <!-- Additional steps would follow -->
+    <!-- Step 2: Customer Information -->
+    <fieldset class="step" id="step2">
+        <legend class="text-xl font-bold mb-2">Step 2: Customer Information</legend>
+        
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_first_name">First Name:</label>
+            {{ form.first_name }}
+        </div>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_last_name">Last Name:</label>
+            {{ form.last_name }}
+        </div>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_phone">Phone Number:</label>
+            {{ form.phone }}
+        </div>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_email">Email:</label>
+            {{ form.email }}
+        </div>
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_vin">VIN Number:</label>
+            {{ form.vin }}
+        </div>
+        
+        <!-- Insurance Claim Section -->
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1" for="id_has_insurance_claim">Do you have an insurance claim?</label>
+            {% for radio in form.has_insurance_claim %}
+              <label class="inline-block mr-4">
+                {{ radio.tag }} {{ radio.choice_label }}
+              </label>
+            {% endfor %}
+        </div>
+        
+        <!-- Container for additional insurance details -->
+        <div id="insuranceDetailsContainer" class="mb-4 hidden">
+            <div class="mb-4">
+                <label class="text-black block font-semibold mb-1" for="id_insurance_name">Insurance Name:</label>
+                {{ form.insurance_name }}
+            </div>
+            <div class="mb-4">
+                <label class="text-black block font-semibold mb-1" for="id_policy_number">Policy Number:</label>
+                {{ form.policy_number }}
+            </div>
+            <div class="mb-4">
+                <label class="text-black block font-semibold mb-1" for="id_claim_number">Claim Number:</label>
+                {{ form.claim_number }}
+            </div>
+            <div class="mb-4">
+                <label class="text-black block font-semibold mb-1" for="id_referral_number">Referral Number:</label>
+                {{ form.referral_number }}
+            </div>
+        </div>
+        
+        <div class="flex justify-between">
+            <button type="button" id="prevStep2" class="bg-gray-500 text-white px-4 py-2">Previous</button>
+            <button type="button" id="nextStep2" class="bg-blue-500 text-white px-4 py-2">Next</button>
+        </div>
+    </fieldset>
+
+    <!-- Step 3: Confirm Your Path -->
+    <fieldset class="step" id="step3">
+        <legend class="text-xl font-bold mb-2">Step 3: Confirm Your Path</legend>
+        
+        <!-- Confirm your quote type -->
+        <div class="mb-4">
+            <label class="text-black block font-semibold mb-1">Confirm your quote type:</label>
+            <div id="quoteOptions">
+                <!-- Options will be injected here via JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Customer Summary -->
+        <div id="customerSummary" class="mb-4 border p-4">
+            <h2 class="text-lg font-bold mb-2">Review Your Information</h2>
+            <p><strong>First Name:</strong> <span id="summaryFirstName"></span></p>
+            <p><strong>Last Name:</strong> <span id="summaryLastName"></span></p>
+            <p><strong>Phone:</strong> <span id="summaryPhone"></span></p>
+            <p><strong>Email:</strong> <span id="summaryEmail"></span></p>
+            <p><strong>VIN:</strong> <span id="summaryVIN"></span></p>
+            <div id="summaryInsurance" class="hidden">
+                <p><strong>Insurance Name:</strong> <span id="summaryInsuranceName"></span></p>
+                <p><strong>Policy Number:</strong> <span id="summaryPolicyNumber"></span></p>
+                <p><strong>Claim Number:</strong> <span id="summaryClaimNumber"></span></p>
+                <p><strong>Referral Number:</strong> <span id="summaryReferralNumber"></span></p>
+            </div>
+        </div>
+        
+        <div class="flex justify-between">
+            <button type="button" id="editStep3" class="bg-gray-500 text-white px-4 py-2">Edit</button>
+            <button type="button" id="confirmStep3" class="bg-blue-500 text-white px-4 py-2">Confirm</button>
+            <button type="submit" id="nextStep3" class="bg-green-500 text-white px-4 py-2 hidden">Submit</button>
+        </div>
+    </fieldset>
 </form>
 {% endblock %}

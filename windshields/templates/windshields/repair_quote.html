@@ -1,0 +1,70 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/jquery.min.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'vanilla-calendar/vanilla-calendar.min.css' %}">
+<script src="{% static 'vanilla-calendar/vanilla-calendar.min.js' %}"></script>
+
+
+<script src="{% static 'windshields/js/repair_quote.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'theme/styles.css' %}">
+
+
+<div class="container mx-auto px-4">
+  <h1 class="text-2xl font-bold mb-4">Repair Quote</h1>
+  <p class="mb-4">{{ message }}</p>
+
+  <div class="flex flex-wrap -mx-4">
+    <!-- Left Column: Quote and Customer Information -->
+    <div class="w-full md:w-1/2 px-4">
+      <div class="border p-4 mb-4">
+        <h2 class="text-xl font-bold mb-2">Your Quote Information</h2>
+        <p><strong>Quote Type:</strong> {% if quote %} {{ quote.get_quote_type_display }} {% endif %}</p>
+        <p><strong>Installation Labor:</strong> ${{ quote.installation_labor }}</p>
+        <!-- Additional quote details as needed -->
+      </div>
+      <div class="border p-4">
+        <h2 class="text-xl font-bold mb-2">Your Information</h2>
+        <p><strong>First Name:</strong> {{ job_entry.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ job_entry.last_name }}</p>
+        <p><strong>Phone:</strong> {{ job_entry.phone }}</p>
+        <p><strong>Email:</strong> {{ job_entry.email }}</p>
+        <p><strong>VIN:</strong> {{ job_entry.vin }}</p>
+        {% if job_entry.has_insurance_claim %}
+          <p><strong>Insurance Name:</strong> {{ job_entry.insurance_name }}</p>
+          <p><strong>Policy Number:</strong> {{ job_entry.policy_number }}</p>
+          <p><strong>Claim Number:</strong> {{ job_entry.claim_number }}</p>
+          <p><strong>Referral Number:</strong> {{ job_entry.referral_number }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Scheduling Widget -->
+    <div class="w-full md:w-1/2 px-4">
+      <div class="border p-4">
+        <h2 class="text-xl font-bold mb-2" id="scheduleHeader">
+          Schedule your appointment:
+          <span id="selectedAppointment" class="font-normal text-gray-700"></span>
+        </h2>
+        <!-- Always-visible calendar -->
+        <div id="myCalendar" class="mb-4"></div>
+        <!-- Timeslot container (will be populated via AJAX) -->
+        <div id="timeslotsContainer" class="mb-4">
+          <p class="text-gray-600">Available timeslots will appear here.</p>
+        </div>
+        <button id="scheduleAppointment" class="bg-blue-500 text-white px-4 py-2">
+          Schedule Appointment
+        </button>
+      </div>
+      {% if not job_entry.has_insurance_claim %}
+      <button id="proceedWithInsurance" class="bg-blue-500 text-white px-4 py-2 mt-4">
+        Proceed with Insurance
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

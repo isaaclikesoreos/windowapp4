@@ -8,3 +8,24 @@
 .step.active {
     display: block;
 }
+
+/* Force header navigation (arrows and "today" button) to use a visible color */
+.vc-header .vc-prev,
+.vc-header .vc-next,
+.vc-header .vc-today {
+    color: #000 !important;
+}
+
+/* Style the month header to display full month names */
+.vc-header .vc-month {
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-transform: capitalize;  /* Ensures "march" becomes "March" */
+    color: #000 !important;
+}
+
+/* Override any other symbols (day names) that might be in another language */
+.vc-weekdays {
+    text-transform: capitalize;
+    color: #000 !important;
+}
