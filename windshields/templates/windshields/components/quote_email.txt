@@ -1,0 +1,24 @@
+Hello {{ customer_name }},
+
+Thank you for choosing our glass services. Your quote is now ready and available for viewing.
+
+QUOTE DETAILS
+-------------
+Quote Type: {{ quote_type }}
+Glass Type: {{ job_entry.get_damage_piece_display }}
+{% if job_entry.damage_side %}Side: {{ job_entry.get_damage_side_display }}{% endif %}
+Insurance: {% if is_insurance %}Yes{% else %}No{% endif %}
+
+Your quote pin is: {{ quote_pin }}
+
+Use this pin to access your quote anytime or to track your appointment status.
+
+View your quote online at: {{ quote_url }}
+
+If you have any questions or would like to discuss your quote further, please don't hesitate to contact our customer service team.
+
+Sincerely,
+The Auto Glass Team
+
+© 2025 Auto Glass Services. All rights reserved.
+This email was sent to {{ job_entry.email }}

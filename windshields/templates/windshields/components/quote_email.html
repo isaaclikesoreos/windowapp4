@@ -1,0 +1,105 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Glass Quote #{{ quote_pin }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4a6cf7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .quote-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-left: 4px solid #4a6cf7;
+        }
+        .pin {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6cf7;
+            text-align: center;
+            padding: 10px;
+            margin: 15px 0;
+            background-color: #f0f4ff;
+            border: 1px dashed #4a6cf7;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4a6cf7;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Glass Quote is Ready</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ customer_name }},</p>
+            
+            <p>Thank you for choosing our glass services. Your quote is now ready and available for viewing.</p>
+            
+            <div class="quote-info">
+                <h2>Quote Details</h2>
+                <p><strong>Quote Type:</strong> {{ quote_type }}</p>
+                <p><strong>Glass Type:</strong> {{ job_entry.get_damage_piece_display }}</p>
+                {% if job_entry.damage_side %}
+                <p><strong>Side:</strong> {{ job_entry.get_damage_side_display }}</p>
+                {% endif %}
+                <p><strong>Insurance:</strong> {% if is_insurance %}Yes{% else %}No{% endif %}</p>
+            </div>
+            
+            <p>Your quote pin is:</p>
+            <div class="pin">{{ quote_pin }}</div>
+            
+            <p>Use this pin to access your quote anytime or to track your appointment status.</p>
+            
+            <p><a href="{{ quote_url }}" class="button">View Your Quote</a></p>
+            
+            <p>If you have any questions or would like to discuss your quote further, please don't hesitate to contact our customer service team.</p>
+            
+            <p>Sincerely,<br>The Auto Glass Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 Auto Glass Services. All rights reserved.</p>
+            <p>This email was sent to {{ job_entry.email }}</p>
+        </div>
+    </div>
+</body>
+</html>
+{% endautoescape %}

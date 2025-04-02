@@ -25,6 +25,33 @@ $(document).ready(function(){
     
     // Navigation: Move from Step 1 to Step 2
     $('#nextStep1').click(function(){
+        // Validate required fields in step 1
+        var damageType = $('#id_damage_piece').val();
+        var causeOfDamage = $('#id_cause_of_damage').val();
+        
+        // Validate windshield repair option if windshield is selected
+        if(damageType === 'windshield') {
+            var isRepairable = $('input[name="is_repairable"]:checked').val();
+            if(isRepairable === undefined) {
+                alert("Please indicate whether the windshield is repairable.");
+                return;
+            }
+        }
+        
+        // Validate side selection if a door/quarter/vent glass is selected
+        if(['front_door_glass', 'rear_door_glass', 'quarter_glass', 'vent_glass'].indexOf(damageType) !== -1) {
+            var damageSide = $('input[name="damage_side"]:checked').val();
+            if(!damageSide) {
+                alert("Please select which side (driver or passenger).");
+                return;
+            }
+        }
+        
+        if(!damageType || !causeOfDamage) {
+            alert("Please complete all required fields before proceeding.");
+            return;
+        }
+        
         $('#step1').removeClass('active');
         $('#step2').addClass('active');
     });
@@ -37,6 +64,29 @@ $(document).ready(function(){
     
     // Transition from Step 2 to Step 3
     $('#nextStep2').click(function(){
+        // Validate required fields in step 2
+        var firstName = $('#id_first_name').val().trim();
+        var lastName = $('#id_last_name').val().trim();
+        var phone = $('#id_phone').val().trim();
+        var vin = $('#id_vin').val().trim();
+        
+        if(!firstName || !lastName || !phone || !vin) {
+            alert("Please complete all required fields before proceeding.");
+            return;
+        }
+        
+        // Validate insurance information if customer selected "has insurance"
+        var hasInsurance = $('input[name="has_insurance_claim"]:checked').val() === 'True';
+        if(hasInsurance) {
+            var insuranceName = $('#id_insurance_name').val().trim();
+            var policyNumber = $('#id_policy_number').val().trim();
+            
+            if(!insuranceName || !policyNumber) {
+                alert("Please provide your insurance information before proceeding.");
+                return;
+            }
+        }
+        
         $('#step2').removeClass('active');
         $('#step3').addClass('active');
         generateQuoteOptions();
@@ -93,22 +143,24 @@ $(document).ready(function(){
     // Functions to generate quote options and populate summary
     function generateQuoteOptions() {
         var damagePiece = $('#id_damage_piece').val();
-        var hasInsurance = $('input[name="has_insurance_claim"]:checked').val();
+        var hasInsurance = $('input[name="has_insurance_claim"]:checked').val() === 'True';
         var optionHtml = '';
 
         if (damagePiece === 'windshield') {
-            var isRepairable = $('input[name="is_repairable"]:checked').val();
-            if (hasInsurance === 'True') {
-                optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_claim"> I would like to proceed with a <strong>windshield replacement claim</strong></label>';
-                optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_repair_claim"> I would like to proceed with a <strong>windshield repair claim</strong></label>';
+            var isRepairable = $('input[name="is_repairable"]:checked').val() === 'True';
+            if (hasInsurance) {
+                if (isRepairable) {
+                    optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_repair_claim"> I would like to proceed with a <strong>windshield repair claim</strong></label>';
+                    optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_claim"> I would like to proceed with a <strong>windshield replacement claim</strong></label>';
+                } else {
+                    optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_claim"> I would like to proceed with a <strong>windshield replacement claim</strong></label>';
+                }
             } else {
-                if (isRepairable === 'True') {
+                if (isRepairable) {
                     optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_repair_quote"> I would like to proceed with a <strong>windshield repair</strong> quote</label>';
                     optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_quote"> I would like to proceed with a <strong>windshield replacement</strong> quote</label>';
-                } else if (isRepairable === 'False') {
-                    optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_quote"> I would like to proceed with a <strong>windshield replacement</strong> quote</label>';
                 } else {
-                    optionHtml = '<p>Please select whether the windshield is repairable.</p>';
+                    optionHtml += '<label class="inline-block mr-4"><input type="radio" name="quote_type" value="windshield_replacement_quote"> I would like to proceed with a <strong>windshield replacement</strong> quote</label>';
                 }
             }
         } else {
@@ -123,7 +175,7 @@ $(document).ready(function(){
                 }
             }
             var text;
-            if (hasInsurance === 'True') {
+            if (hasInsurance) {
                 text = 'I would like to proceed with a ';
                 if (sideLabel) {
                     text += sideLabel + ' ';
@@ -147,8 +199,8 @@ $(document).ready(function(){
         $('#summaryPhone').text($('#id_phone').val());
         $('#summaryEmail').text($('#id_email').val());
         $('#summaryVIN').text($('#id_vin').val());
-        var hasInsurance = $('input[name="has_insurance_claim"]:checked').val();
-        if(hasInsurance === 'True') {
+        var hasInsurance = $('input[name="has_insurance_claim"]:checked').val() === 'True';
+        if(hasInsurance) {
             $('#summaryInsurance').removeClass('hidden');
             $('#summaryInsuranceName').text($('#id_insurance_name').val());
             $('#summaryPolicyNumber').text($('#id_policy_number').val());

@@ -1,11 +1,19 @@
+
+import random
+import string
 from django.db import models
-
-# Create your models here.
 from django.conf import settings
-from a_users.models import Vehicle  # ensure you import the Vehicle model
-from a_users.models import Customer
+from .models import JobEntry, InsuranceClaim, Customer, Part
 
-
+def generate_unique_pin():
+    """Generate a unique 6-character alphanumeric pin for quotes"""
+    while True:
+        # Generate a 6-character alphanumeric pin
+        pin = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        
+        # Check if this pin already exists
+        if not Quote.objects.filter(pin=pin).exists():
+            return pin
 
 
 class JobEntry(models.Model):
@@ -162,10 +170,21 @@ class Quote(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     
+    # New field for quote pin
+    pin = models.CharField(max_length=6, unique=True, default=generate_unique_pin)
+    
+    # New field to track if pin has been sent to customer
+    pin_sent = models.BooleanField(default=False)
+    
     parts = models.ManyToManyField('Part', through='QuotePart', related_name='quotes')
     
     def __str__(self):
-        return f"Quote for JobEntry {self.job_entry.id}"
+        return f"Quote {self.pin} for JobEntry {self.job_entry.id if self.job_entry else 'N/A'}"
+    
+    def save(self, *args, **kwargs):
+        if not self.pin:
+            self.pin = generate_unique_pin()
+        super().save(*args, **kwargs)
 
 class InsuranceClaim(models.Model):
     customer = models.ForeignKey(

@@ -16,6 +16,9 @@ shortuuid = "*"
 pillow = "*"
 django_cleanup = "*"
 django-tailwind = {extras = ["reload"], version = "*"}
+django-scheduler = "*"
+twilio = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

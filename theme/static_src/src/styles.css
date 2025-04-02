@@ -9,23 +9,24 @@
     display: block;
 }
 
-/* Force header navigation (arrows and "today" button) to use a visible color */
+/* Ensure the header controls (prev, next, today) are visible */
 .vc-header .vc-prev,
 .vc-header .vc-next,
 .vc-header .vc-today {
-    color: #000 !important;
+    color: #000 !important;  /* black text */
 }
 
-/* Style the month header to display full month names */
+/* Force the month name to be displayed in full and capitalized */
 .vc-header .vc-month {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    text-transform: capitalize;  /* Ensures "march" becomes "March" */
+    text-transform: capitalize;
     color: #000 !important;
 }
 
-/* Override any other symbols (day names) that might be in another language */
+/* Set weekdays to use English abbreviations and be visible */
 .vc-weekdays {
+    font-size: 1rem;
     text-transform: capitalize;
     color: #000 !important;
 }

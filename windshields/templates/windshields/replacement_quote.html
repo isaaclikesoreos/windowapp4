@@ -1,0 +1,341 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+  <h1 class="text-2xl font-bold mb-4">Replacement Quote</h1>
+  <p class="mb-4">{{ message }}</p>
+
+  <div class="flex flex-wrap -mx-4">
+    <!-- Left Column: Quote and Customer Information -->
+    <div class="w-full md:w-1/2 px-4">
+      <div class="border p-4 mb-4 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-2">Quote Information</h2>
+        <div class="flex justify-between items-center mb-4">
+          <p><strong>Quote Type:</strong> {% if quote %} {{ quote.get_quote_type_display }} {% else %} Replacement {% endif %}</p>
+          {% if quote %}
+          <div class="bg-blue-100 border border-blue-300 rounded-lg px-3 py-1">
+            <p class="text-sm"><span class="font-bold">Quote PIN:</span> <span class="font-mono">{{ quote.pin }}</span></p>
+          </div>
+          {% endif %}
+        </div>
+        
+        {% if job_entry.damage_piece == 'windshield' %}
+          <p class="mt-4"><strong>Glass Type:</strong> Windshield</p>
+        {% else %}
+          <p class="mt-4"><strong>Glass Type:</strong> {{ job_entry.get_damage_piece_display }}</p>
+          {% if job_entry.damage_side %}
+            <p><strong>Side:</strong> {{ job_entry.get_damage_side_display }}</p>
+          {% endif %}
+        {% endif %}
+        
+        <p class="mt-4"><strong>Status:</strong> <span class="text-amber-500">Pending</span></p>
+        <p class="mt-2 italic text-gray-600">We need to verify glass availability and provide you with an accurate quote. A team member will contact you soon.</p>
+        
+        {% if notification_sent %}
+        <div class="mt-4 bg-green-100 p-3 rounded-lg text-green-700 text-sm">
+          <p>Your quote details and PIN have been sent to your contact information.</p>
+        </div>
+        {% else %}
+        <div class="mt-4 flex justify-end">
+          <button id="resendNotification" data-quote-id="{{ quote.id }}" class="text-blue-600 hover:underline text-sm">
+            Send PIN to Email/Phone
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="border p-4 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-2">Your Information</h2>
+        <p><strong>First Name:</strong> {{ job_entry.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ job_entry.last_name }}</p>
+        <p><strong>Phone:</strong> {{ job_entry.phone }}</p>
+        <p><strong>Email:</strong> {{ job_entry.email }}</p>
+        <p><strong>VIN:</strong> {{ job_entry.vin }}</p>
+        
+        {% if is_insurance %}
+          <div class="border-t mt-4 pt-4">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-bold mb-2">Insurance Information</h3>
+              <button id="editInsuranceBtn" class="text-blue-600 hover:underline px-2 py-1 text-sm border border-blue-600 rounded-lg">Edit</button>
+            </div>
+            
+            <!-- Insurance information display -->
+            <div id="insuranceInfo">
+              <p><strong>Insurance Name:</strong> <span id="displayInsuranceCompany">{{ job_entry.insurance_name|default:"None" }}</span></p>
+              <p><strong>Policy Number:</strong> <span id="displayPolicyNumber">{{ job_entry.policy_number|default:"None" }}</span></p>
+              <p><strong>Claim Number:</strong> <span id="displayClaimNumber">{{ job_entry.claim_number|default:"None" }}</span></p>
+              <p><strong>Referral Number:</strong> <span id="displayReferralNumber">{{ job_entry.referral_number|default:"None" }}</span></p>
+              
+              {% if claim %}
+                <div class="mt-2">
+                  <p><strong>Claim Status:</strong> <span class="text-amber-500">{{ claim.status|title }}</span></p>
+                  <p><strong>Loss Date:</strong> {{ claim.loss_date }}</p>
+                </div>
+              {% endif %}
+            </div>
+            
+            <!-- Insurance information edit form (hidden by default) -->
+            <div id="insuranceEditForm" class="hidden mt-2 bg-gray-50 p-4 rounded-lg">
+              <form id="updateInsuranceForm">
+                {% csrf_token %}
+                <input type="hidden" name="job_entry_id" value="{{ job_entry.id }}">
+                
+                <div class="mb-3">
+                  <label class="block text-black font-semibold mb-1" for="insurance_name">Insurance Company:</label>
+                  <input type="text" id="insurance_name" name="insurance_name" class="w-full rounded-lg py-2 px-3 bg-white border" value="{{ job_entry.insurance_name|default:'' }}">
+                </div>
+                
+                <div class="mb-3">
+                  <label class="block text-black font-semibold mb-1" for="policy_number">Policy Number:</label>
+                  <input type="text" id="policy_number" name="policy_number" class="w-full rounded-lg py-2 px-3 bg-white border" value="{{ job_entry.policy_number|default:'' }}">
+                </div>
+                
+                <div class="mb-3">
+                  <label class="block text-black font-semibold mb-1" for="claim_number">Claim Number:</label>
+                  <input type="text" id="claim_number" name="claim_number" class="w-full rounded-lg py-2 px-3 bg-white border" value="{{ job_entry.claim_number|default:'' }}">
+                </div>
+                
+                <div class="mb-3">
+                  <label class="block text-black font-semibold mb-1" for="referral_number">Referral Number:</label>
+                  <input type="text" id="referral_number" name="referral_number" class="w-full rounded-lg py-2 px-3 bg-white border" value="{{ job_entry.referral_number|default:'' }}">
+                </div>
+                
+                <div class="flex space-x-2">
+                  <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Save</button>
+                  <button type="button" id="cancelInsuranceEdit" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Actions and Status -->
+    <div class="w-full md:w-1/2 px-4">
+      <div class="border p-4 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Next Steps</h2>
+        
+        <div class="bg-blue-100 p-4 rounded-lg mb-4">
+          <h3 class="text-lg font-semibold mb-2">What to Expect</h3>
+          <ul class="list-disc pl-5 space-y-2">
+            <li>Our team will review your request and check glass availability</li>
+            <li>We'll prepare a detailed quote for your specific vehicle</li>
+            <li>You'll receive a call or email with quote details within 24 hours</li>
+            <li>Once the quote is approved, we can schedule your appointment</li>
+          </ul>
+        </div>
+        
+        <div class="mt-4">
+          <p class="font-medium">Have questions? Contact us:</p>
+          <p class="text-blue-600">(555) 123-4567</p>
+          <p class="text-blue-600">service@glassrepair.example.com</p>
+        </div>
+      </div>
+      
+      <!-- Actions section -->
+      <div class="mt-4 space-y-2">
+        {% if not is_insurance and job_entry.damage_piece == 'windshield' %}
+          <button id="proceedWithInsurance" class="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
+            Proceed with Insurance
+          </button>
+        {% elif is_insurance %}
+          <button id="switchToCustomerQuote" class="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
+            Switch to Customer Pay Quote
+          </button>
+        {% endif %}
+        
+        <button id="requestCallback" class="bg-green-500 text-white px-4 py-2 rounded-lg w-full">
+          Request Callback
+        </button>
+
+        <!-- Callback request modal (hidden by default) -->
+        <div id="callbackModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+          <div class="bg-white rounded-lg w-full max-w-md p-6 mx-4">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold">Request a Callback</h3>
+              <button id="closeCallbackModal" class="text-gray-500 hover:text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form id="callbackForm">
+              {% csrf_token %}
+              <input type="hidden" name="job_entry_id" value="{{ job_entry.id }}">
+              
+              <div class="mb-4">
+                <label class="block text-black font-semibold mb-1" for="preferred_time">Best Time to Call:</label>
+                <select id="preferred_time" name="preferred_time" class="w-full rounded-lg py-2 px-3 bg-white border">
+                  <option value="morning">Morning (9AM - 12PM)</option>
+                  <option value="afternoon">Afternoon (12PM - 4PM)</option>
+                  <option value="evening">Evening (4PM - 7PM)</option>
+                  <option value="anytime">Anytime</option>
+                </select>
+              </div>
+              
+              <div class="mb-4">
+                <label class="block text-black font-semibold mb-1" for="additional_notes">Additional Notes (Optional):</label>
+                <textarea id="additional_notes" name="additional_notes" class="w-full rounded-lg py-2 px-3 bg-white border h-24" placeholder="Any specific questions or concerns?"></textarea>
+              </div>
+              
+              <div class="flex justify-end space-x-2">
+                <button type="button" id="cancelCallback" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancel</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Submit Request</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hidden scheduling section - will be shown later -->
+      {% if show_scheduling %}
+      <div id="schedulingSection" class="border p-4 mt-4 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-2" id="scheduleHeader">
+          Schedule your appointment:
+          <span id="selectedAppointment" class="font-normal text-gray-700"></span>
+        </h2>
+        
+        <!-- Service Location -->
+        <div class="mb-4">
+          <label class="block font-semibold mb-1">Service Location</label>
+          <select id="serviceLocation" class="w-full rounded-lg py-2 px-3 bg-gray-100">
+            <option value="Main Shop">Main Shop</option>
+            <option value="North Location">North Location</option>
+            <option value="Mobile Service">Mobile Service</option>
+          </select>
+        </div>
+        
+        <!-- Calendar container -->
+        <div id="myCalendar" class="mb-4"></div>
+        
+        <!-- Available time slots will appear here -->
+        <div id="timeslotsContainer" class="mb-4">
+          <p class="text-gray-600">Select a date to see available timeslots.</p>
+        </div>
+        
+        <button id="scheduleAppointment" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+          Schedule Appointment
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Load jQuery first if not already loaded -->
+<script src="{% static 'windshields/js/jquery.min.js' %}"></script>
+
+<!-- JS for handling insurance editing -->
+<script>
+$(document).ready(function(){
+  // Insurance information edit handling
+  $('#editInsuranceBtn').click(function(){
+    $('#insuranceInfo').addClass('hidden');
+    $('#insuranceEditForm').removeClass('hidden');
+  });
+  
+  $('#cancelInsuranceEdit').click(function(){
+    $('#insuranceEditForm').addClass('hidden');
+    $('#insuranceInfo').removeClass('hidden');
+  });
+  
+  // Submit insurance information update
+  $('#updateInsuranceForm').submit(function(e){
+    e.preventDefault();
+    
+    const formData = {
+      'job_entry_id': $('input[name="job_entry_id"]').val(),
+      'insurance_name': $('#insurance_name').val(),
+      'policy_number': $('#policy_number').val(),
+      'claim_number': $('#claim_number').val(),
+      'referral_number': $('#referral_number').val(),
+      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+    };
+    
+    $.ajax({
+      type: 'POST',
+      url: '/windshields/update-insurance-info/',
+      data: formData,
+      success: function(response){
+        if(response.success){
+          // Update the displayed insurance information
+          $('#displayInsuranceCompany').text(formData.insurance_name || 'None');
+          $('#displayPolicyNumber').text(formData.policy_number || 'None');
+          $('#displayClaimNumber').text(formData.claim_number || 'None');
+          $('#displayReferralNumber').text(formData.referral_number || 'None');
+          
+          // Hide the edit form and show the display info
+          $('#insuranceEditForm').addClass('hidden');
+          $('#insuranceInfo').removeClass('hidden');
+          
+          // Show success message
+          alert('Insurance information updated successfully!');
+          
+          // Reload the page if insurance status changed
+          if(response.reload){
+            window.location.reload();
+          }
+        } else {
+          alert('Error updating insurance information: ' + response.error);
+        }
+      },
+      error: function(){
+        alert('An error occurred while updating insurance information.');
+      }
+    });
+  });
+  
+  // Handle proceeding with insurance
+  $('#proceedWithInsurance').click(function(){
+    window.location.href = '/windshields/insurance-replacement-quote/?job_entry_id={{ job_entry.id }}';
+  });
+  
+  // Handle switching to customer quote
+  $('#switchToCustomerQuote').click(function(){
+    window.location.href = '/windshields/replacement-quote/?job_entry_id={{ job_entry.id }}&type=customer';
+  });
+  
+  // Handle callback request
+  $('#requestCallback').click(function(){
+    $('#callbackModal').removeClass('hidden');
+  });
+  
+  $('#closeCallbackModal, #cancelCallback').click(function(){
+    $('#callbackModal').addClass('hidden');
+  });
+  
+  $('#callbackForm').submit(function(e){
+    e.preventDefault();
+    
+    const formData = {
+      'job_entry_id': $('input[name="job_entry_id"]').val(),
+      'preferred_time': $('#preferred_time').val(),
+      'additional_notes': $('#additional_notes').val(),
+      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+    };
+    
+    $.ajax({
+      type: 'POST',
+      url: '/windshields/request-callback/',
+      data: formData,
+      success: function(response){
+        if(response.success){
+          $('#callbackModal').addClass('hidden');
+          alert(response.message || 'A team member will contact you shortly to discuss your replacement quote.');
+        } else {
+          alert('Error submitting callback request: ' + response.error);
+        }
+      },
+      error: function(){
+        alert('An error occurred while submitting your callback request.');
+      }
+    });
+  });
+});
+</script>
+
+{% csrf_token %}
+{% endblock %}

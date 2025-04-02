@@ -1,0 +1,139 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+  <h1 class="text-2xl font-bold mb-4">Schedule Your Appointment</h1>
+  
+  <div class="flex flex-wrap -mx-4">
+    <div class="w-full md:w-3/4 px-4">
+      <div id="calendar" class="mb-4"></div>
+    </div>
+    
+    <div class="w-full md:w-1/4 px-4">
+      <div class="border p-4">
+        <h2 class="text-xl font-bold mb-2">Book Appointment</h2>
+        <form id="appointmentForm">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Date</label>
+            <input type="text" id="selectedDate" class="w-full p-2 border" readonly>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Available Times</label>
+            <div id="timeslotsContainer" class="border p-2 h-48 overflow-y-auto">
+              <p class="text-gray-500">Select a date to see available times</p>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Service Location</label>
+            <select id="serviceLocation" class="w-full p-2 border">
+              <option value="Main Shop">Main Shop</option>
+              <option value="Mobile Service">Mobile Service</option>
+            </select>
+          </div>
+          
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 w-full">
+            Schedule Appointment
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+<script src="{% static 'windshields/js/jquery.min.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      selectable: true,
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek'
+      },
+      events: '/windshields/get-appointments/',
+      select: function(info) {
+        const selectedDate = info.startStr;
+        document.getElementById('selectedDate').value = selectedDate;
+        
+        // Fetch available timeslots for the selected date
+        $.ajax({
+          type: 'GET',
+          url: '/windshields/available-timeslots/',
+          data: { 'date': selectedDate },
+          success: function(response) {
+            if(response.success) {
+              let html = '';
+              if(response.timeslots.length > 0) {
+                response.timeslots.forEach(function(slot) {
+                  html += '<label class="block p-2 hover:bg-gray-100"><input type="radio" name="timeslot_id" value="' + 
+                          slot.id + '"> ' + slot.start_time + ' - ' + slot.end_time + '</label>';
+                });
+              } else {
+                html = '<p class="text-gray-500">No available times for this date</p>';
+              }
+              $('#timeslotsContainer').html(html);
+            } else {
+              $('#timeslotsContainer').html('<p class="text-red-500">Error: ' + response.error + '</p>');
+            }
+          },
+          error: function() {
+            $('#timeslotsContainer').html('<p class="text-red-500">Error fetching timeslots.</p>');
+          }
+        });
+      }
+    });
+    calendar.render();
+    
+    // Handle form submission
+    $('#appointmentForm').submit(function(e) {
+      e.preventDefault();
+      
+      const selectedDate = $('#selectedDate').val();
+      const selectedTimeslotId = $('input[name="timeslot_id"]:checked').val();
+      const serviceLocation = $('#serviceLocation').val();
+      
+      if(!selectedDate || !selectedTimeslotId) {
+        alert("Please select a date and a timeslot.");
+        return;
+      }
+      
+      $.ajax({
+        type: 'POST',
+        url: '/windshields/schedule-appointment/',
+        data: {
+          'date': selectedDate,
+          'timeslot_ids[]': [selectedTimeslotId],
+          'service_location': serviceLocation,
+          'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+        },
+        success: function(response) {
+          if(response.success) {
+            alert("Appointment scheduled successfully!");
+            calendar.refetchEvents(); // Refresh calendar events
+            $('#selectedDate').val('');
+            $('#timeslotsContainer').html('<p class="text-gray-500">Select a date to see available times</p>');
+          } else {
+            alert("Error scheduling appointment: " + response.error);
+          }
+        },
+        error: function() {
+          alert("An error occurred while scheduling the appointment.");
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

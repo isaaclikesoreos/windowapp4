@@ -1,0 +1,42 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-12">
+  <div class="bg-white rounded-lg shadow-lg p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold mb-2">Quote Lookup</h1>
+      <p class="text-gray-600">Enter your 6-character quote PIN to view your quote</p>
+    </div>
+    
+    {% if error %}
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+      <p>{{ error }}</p>
+    </div>
+    {% endif %}
+    
+    <form method="post" action="{% url 'quote_lookup_form' %}">
+      {% csrf_token %}
+      
+      <div class="mb-6">
+        {{ form.pin }}
+        {% if form.pin.errors %}
+        <div class="text-red-500 text-sm mt-1">
+          {% for error in form.pin.errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      
+      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+        Find My Quote
+      </button>
+    </form>
+    
+    <div class="mt-6 text-center text-gray-500 text-sm">
+      <p>Lost your PIN? Contact our customer service at<br>(555) 123-4567</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
