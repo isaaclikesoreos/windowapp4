@@ -1,7 +1,8 @@
 
 from django.urls import path, include
 from . import views
-from .views import QuoteStartView, QuoteLookupFormView
+from .views import QuoteStartView
+from a_home.views import QuoteLookupFormView
 
 urlpatterns = [
     path('quote_start/', QuoteStartView.as_view(), name='quote_start'),
@@ -13,7 +14,7 @@ urlpatterns = [
     path('insurance-replacement-quote/', views.InsuranceReplacementQuoteView.as_view(), name='insurance_replacement_quote'),
     # Quote lookup paths
     path('quote-lookup/', QuoteLookupFormView.as_view(), name='quote_lookup_form'),
-    path('quote/<str:pin>/', views.quote_lookup_view, name='quote_lookup'),
+
     # Common paths
     path('available-timeslots/', views.available_timeslots, name='available_timeslots'),
     path('schedule-appointment/', views.schedule_appointment, name='schedule_appointment'),

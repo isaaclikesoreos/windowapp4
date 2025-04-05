@@ -1,6 +1,4 @@
-
 from django.contrib.auth.decorators import login_required
-
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import TemplateView, FormView
@@ -8,7 +6,7 @@ from django.http import Http404
 from django.urls import reverse
 from django import forms
 
-from .models import Quote
+from windshields.models import Quote
 
 @login_required
 def home(request):
@@ -16,8 +14,6 @@ def home(request):
         'user': request.user,  # Pass the logged-in user to the template
     }
     return render(request, 'home.html', context)
-
-
 
 
 class QuotePinForm(forms.Form):
@@ -34,7 +30,7 @@ class QuotePinForm(forms.Form):
 
 class QuoteLookupFormView(FormView):
     """View for the quote lookup form on the home page"""
-    template_name = 'windshields/quote_lookup_form.html'
+    template_name = 'a_home/quote_lookup_form.html'  # FIXED: Changed template path
     form_class = QuotePinForm
     
     def form_valid(self, form):
@@ -69,9 +65,8 @@ def quote_lookup_view(request, pin):
             'error': 'Invalid quote PIN. Please check and try again.',
             'form': QuotePinForm(initial={'pin': pin})
         }
-        return render(request, 'windshields/quote_lookup_form.html', context)
+        return render(request, 'a_home/quote_lookup_form.html', context)  # FIXED: Changed template path
     
-
 
 def resend_quote_notification(request, quote_id):
     """View to resend a quote notification (email and SMS)"""
@@ -86,7 +81,7 @@ def resend_quote_notification(request, quote_id):
         quote.save(update_fields=['pin_sent'])
         
         # Send the notifications
-        from .utils import send_quote_notifications
+        from windshields.utils import send_quote_notifications
         notification_result = send_quote_notifications(quote)
         
         return JsonResponse({

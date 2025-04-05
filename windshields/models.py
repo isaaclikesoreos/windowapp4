@@ -3,7 +3,7 @@ import random
 import string
 from django.db import models
 from django.conf import settings
-from .models import JobEntry, InsuranceClaim, Customer, Part
+from a_users.models import Customer, Vehicle
 
 def generate_unique_pin():
     """Generate a unique 6-character alphanumeric pin for quotes"""
@@ -122,8 +122,6 @@ class JobEntry(models.Model):
     def __str__(self):
         return f"JobEntry for {self.first_name} {self.last_name} - {self.damage_piece}"
 
-
-
 class Quote(models.Model):
     # New field to indicate if this quote is for a repair or replacement.
     QUOTE_TYPE_CHOICES = [
@@ -149,7 +147,7 @@ class Quote(models.Model):
         on_delete=models.CASCADE
     )
     vehicle = models.ForeignKey(
-        'a_users.Vehicle',
+        Vehicle,
         related_name='quotes',
         on_delete=models.CASCADE,
         null=True,
@@ -170,8 +168,8 @@ class Quote(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     
-    # New field for quote pin
-    pin = models.CharField(max_length=6, unique=True, default=generate_unique_pin)
+    # Changed pin field to have a random default instead of a callable
+    pin = models.CharField(max_length=6, unique=True, default='')
     
     # New field to track if pin has been sent to customer
     pin_sent = models.BooleanField(default=False)
@@ -183,7 +181,12 @@ class Quote(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.pin:
-            self.pin = generate_unique_pin()
+            # Generate a unique pin here before saving
+            while True:
+                pin = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+                if not Quote.objects.filter(pin=pin).exists():
+                    self.pin = pin
+                    break
         super().save(*args, **kwargs)
 
 class InsuranceClaim(models.Model):

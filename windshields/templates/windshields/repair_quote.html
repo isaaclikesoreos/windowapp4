@@ -338,40 +338,6 @@ $(document).ready(function(){
     });
   });
 });
-</script>'policy_number': $('#policy_number').val(),
-      'claim_number': $('#claim_number').val(),
-      'referral_number': $('#referral_number').val(),
-      'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
-    };
-    
-    $.ajax({
-      type: 'POST',
-      url: '/windshields/update-insurance-info/',
-      data: formData,
-      success: function(response){
-        if(response.success){
-          // Update the displayed insurance information
-          $('#displayInsuranceCompany').text(formData.insurance_name || 'None');
-          $('#displayPolicyNumber').text(formData.policy_number || 'None');
-          $('#displayClaimNumber').text(formData.claim_number || 'None');
-          $('#displayReferralNumber').text(formData.referral_number || 'None');
-          
-          // Hide the edit form and show the display info
-          $('#insuranceEditForm').addClass('hidden');
-          $('#insuranceInfo').removeClass('hidden');
-          
-          // Show success message
-          alert('Insurance information updated successfully!');
-        } else {
-          alert('Error updating insurance information: ' + response.error);
-        }
-      },
-      error: function(){
-        alert('An error occurred while updating insurance information.');
-      }
-    });
-  });
-});
 </script>
 
 {% csrf_token %}
