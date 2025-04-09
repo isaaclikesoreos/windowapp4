@@ -1,0 +1,147 @@
+{% extends 'layouts/blank.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-6">
+    <a href="{% url 'a_administration:quote_list' %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+      Back to Quotes
+    </a>
+  </div>
+
+  <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+    <div class="bg-gray-50 px-6 py-4 border-b">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900">Quote #{{ quote.pin }}</h1>
+        <div class="flex space-x-2">
+          {% if quote.insurance_claims.exists %}
+            {% with claim=quote.insurance_claims.first %}
+              {% if claim.status == 'initiated' %}
+                <button id="approveQuoteBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                  Approve Quote
+                </button>
+              {% endif %}
+              {% if claim.status == 'approved' and not appointment %}
+                <button id="scheduleAppointmentBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                  Schedule Appointment
+                </button>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+          <button id="editQuoteBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+            Edit Quote
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="p-6">
+      <!-- Status Badges -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+            {% if quote.quote_type == 'repair' %}bg-green-100 text-green-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+          {{ quote.get_quote_type_display }} Quote
+        </span>
+        
+        {% if job_entry.has_insurance_claim %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+          Insurance Job
+        </span>
+        {% else %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+          Customer Pay
+        </span>
+        {% endif %}
+        
+        {% if claim %}
+          {% if claim.status == 'initiated' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+              Initial Claim
+            </span>
+          {% elif claim.status == 'approved' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              Approved Claim
+            </span>
+          {% elif claim.status == 'scheduled' %}
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              Scheduled
+            </span>
+          {% endif %}
+        {% endif %}
+        
+        {% if appointment %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+          Appointment Scheduled
+        </span>
+        {% endif %}
+      </div>
+      
+      <!-- Quote Details -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div>
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Quote Information</h2>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Quote Type</h3>
+                <p class="mt-1">{{ quote.get_quote_type_display }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Quote PIN</h3>
+                <p class="mt-1 font-mono">{{ quote.pin }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Created On</h3>
+                <p class="mt-1">{{ quote.created_at|date:"F j, Y" }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Notification Sent</h3>
+                <p class="mt-1">{{ quote.pin_sent|yesno:"Yes,No" }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Installation Labor</h3>
+                <p class="mt-1">${{ quote.installation_labor }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Recalibration</h3>
+                <p class="mt-1">${{ quote.recalabration_costs }}</p>
+              </div>
+              {% if quote.total_parts_costs or quote.final_total %}
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Parts Total</h3>
+                <p class="mt-1">${{ quote.total_parts_costs }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Final Total</h3>
+                <p class="mt-1 font-semibold">${{ quote.final_total }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Customer Information</h2>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Name</h3>
+                <p class="mt-1">{{ job_entry.first_name }} {{ job_entry.last_name }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Phone</h3>
+                <p class="mt-1">{{ job_entry.phone }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">Email</h3>
+                <p class="mt-1">{{ job_entry.email|default:"Not provided" }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-500">VIN</h3>
+                <p class="mt-1 font-mono">{{ job_entry.vin }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-

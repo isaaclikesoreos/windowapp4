@@ -39,6 +39,7 @@ urlpatterns = [
     path('profile/', include('a_users.urls')),
     path('windshields/', include('windshields.urls')),
     path('@<username>/', ProfileView.as_view(), name="profile"),
+    path('administration/', include('a_administration.urls', namespace='a_administration')),
 ]
 
 

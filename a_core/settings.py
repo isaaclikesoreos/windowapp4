@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'a_users',
     'a_rtchat',
     'windshields',
+    'a_administration',
     'tailwind',
     'theme',
     'django_browser_reload',

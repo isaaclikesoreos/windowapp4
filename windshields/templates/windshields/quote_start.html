@@ -8,6 +8,10 @@
 <!-- Then load your custom script -->
 <script src="{% static 'windshields/js/quote_start.js' %}"></script>
 
+<!-- VIN decoder scripts and styles -->
+<script src="{% static 'windshields/js/vin_decoder.js' %}"></script>
+<link rel="stylesheet" href="{% static 'windshields/css/vin_decoder_styles.css' %}">
+
 <form id="jobEntryForm" method="post" data-url="{% url 'quote_start' %}" class="space-y-4">
     {% csrf_token %}
     <!-- Step 1: Damage Information -->
