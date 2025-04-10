@@ -26,22 +26,42 @@ class AdminDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        today = timezone.now().date()
         
         # Get recent job entries
         context['recent_job_entries'] = JobEntry.objects.all().order_by('-created_at')[:5]
         
-        # Get recent appointments
-        context['recent_appointments'] = Appointment.objects.all().order_by('-appointment_date')[:5]
+        # Get today's appointments
+        context['todays_appointments'] = Appointment.objects.filter(
+            appointment_date__date=today
+        ).order_by('appointment_date')[:5]
+        context['todays_appointments_count'] = Appointment.objects.filter(
+            appointment_date__date=today
+        ).count()
         
         # Get pending quotes (without appointments)
-        context['pending_quotes'] = Quote.objects.filter(
+        pending_quotes = Quote.objects.filter(
             insurance_claims__isnull=True  # No insurance claim
-        ).order_by('-created_at')[:5]
+        ).order_by('-created_at')
+        context['pending_quotes'] = pending_quotes[:5]
+        context['pending_quotes_count'] = pending_quotes.count()
         
         # Get pending insurance claims
-        context['pending_claims'] = InsuranceClaim.objects.filter(
+        pending_claims = InsuranceClaim.objects.filter(
             status='initiated'
-        ).order_by('-loss_date')[:5]
+        ).order_by('-loss_date')
+        context['pending_claims'] = pending_claims[:5]
+        context['pending_claims_count'] = pending_claims.count()
+        
+        # Get jobs for current month
+        first_day_of_month = today.replace(day=1)
+        last_day_of_month = (first_day_of_month.replace(month=first_day_of_month.month % 12 + 1, day=1) - timedelta(days=1)) \
+            if first_day_of_month.month < 12 else first_day_of_month.replace(year=first_day_of_month.year + 1, month=1, day=1) - timedelta(days=1)
+        
+        context['month_jobs_count'] = JobEntry.objects.filter(
+            created_at__date__gte=first_day_of_month,
+            created_at__date__lte=last_day_of_month
+        ).count()
         
         # Get admin preferences
         try:
